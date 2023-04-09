@@ -10,10 +10,10 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
-    tibble
-    dplyr
-    purrr
-    stringr
-    forcats
-    magrittr
+    tibble,
+    dplyr,
+    purrr,
+    stringr,
+    forcats,
+    magrittr,
     rlang
