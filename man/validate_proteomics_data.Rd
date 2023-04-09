@@ -7,7 +7,7 @@
 validate_proteomics_data(proteomics_data)
 }
 \arguments{
-\item{A}{\code{proteomics_data} object.}
+\item{proteomics_data}{A \code{proteomics_data} object.}
 }
 \value{
 A validated \code{proteomics_data} object.

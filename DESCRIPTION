@@ -16,4 +16,10 @@ Imports:
     stringr,
     forcats,
     magrittr,
-    rlang
+    rlang,
+    tidyr,
+    tidyselect,
+    ggplot2,
+    patchwork,
+    UpSetR,
+    broom

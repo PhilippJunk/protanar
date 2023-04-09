@@ -34,7 +34,7 @@ new_proteomics_data <- function(df, annotation, has_tech_repl) {
 
 #' Validator for `proteomics_data` class
 #'
-#' @param A `proteomics_data` object.
+#' @param proteomics_data A `proteomics_data` object.
 #' @return A validated `proteomics_data` object.
 validate_proteomics_data <- function(proteomics_data) {
   df <- tibble::as_tibble(proteomics_data)
@@ -140,12 +140,12 @@ proteomics_data <- function(
 ) {
   
   df <- df %>% 
-    dpylr::select({df_id}, {df_label}, {df_LFQ}) %>%
-    dpylr::rename(id = {df_id},
+    dplyr::select({df_id}, {df_label}, {df_LFQ}) %>%
+    dplyr::rename(id = {df_id},
 				  label = {df_label},
 				  LFQ = {df_LFQ}) %>%
-    dpylr::select(id, label, LFQ) %>%
-    dpylr::mutate(id = make.names(id),
+    dplyr::select(id, label, LFQ) %>%
+    dplyr::mutate(id = make.names(id),
 				  label = make.names(label))
   if (!is_log2) {
     stopifnot(all(df$LFQ > 2))
@@ -217,7 +217,7 @@ collapse_tech_repl <- function(p_df) {
     dplyr::mutate(LFQ = 2^LFQ) %>%
     dplyr::inner_join(annotation, by = 'label') %>%
     dplyr::group_by(id, new_label) %>%
-    dplyr::summarise(LFQ = median(LFQ), .groups='drop')
+    dplyr::summarise(LFQ = stats::median(LFQ), .groups='drop')
   
   annotation <- annotation %>%
     dplyr::select(new_label, group, biol_repl) %>%
@@ -341,7 +341,7 @@ deconstruct_groups <- function(p_df) {
 
   sets <- p_df %>%
     dplyr::inner_join(annotation, by='label') %>%
-    dplyr::mutate(group = factor(group) %>% forcats::fct_infreq %>% fct_rev) %>%
+    dplyr::mutate(group = factor(group) %>% forcats::fct_infreq %>% forcats::fct_rev) %>%
     dplyr::select(id, group) %>%
     dplyr::distinct %>%
     dplyr::arrange(group) %>%
