@@ -1,0 +1,11 @@
+Package: protanar
+Title: PROTeomics ANAlysis in R
+Version: 0.0.0.9000
+Authors@R: 
+    person("Philipp", "Junk", , "philipp.junk@ucd.ie", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-5228-3896"))
+Description: A package for analysis of proteomics data in R.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
