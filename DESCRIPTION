@@ -23,5 +23,6 @@ Imports:
     patchwork,
     UpSetR,
     broom,
-    MsCoreUtils
+    MsCoreUtils,
+    limma
 biocViews:

@@ -2,7 +2,11 @@
 
 export("%>%")
 export(collapse_tech_repl)
+export(construct_contrasts_all)
+export(construct_contrasts_control)
 export(deconstruct_groups)
+export(diff_expr)
+export(diff_type)
 export(filter_data_by_group)
 export(filter_data_by_group_and_id)
 export(filter_data_by_samples)
