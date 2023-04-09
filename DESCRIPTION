@@ -22,4 +22,6 @@ Imports:
     ggplot2,
     patchwork,
     UpSetR,
-    broom
+    broom,
+    MsCoreUtils
+biocViews:
