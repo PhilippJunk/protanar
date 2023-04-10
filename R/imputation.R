@@ -70,8 +70,8 @@ imputation <- function(
     tidyr::pivot_wider(names_from = 'label', values_from = 'LFQ', values_fill = NA)
   mx <- df_wide %>%
     dplyr::select(tidyselect::where(is.numeric)) %>%
-    as.matrix
-  cols <- mx %>% colnames
+    as.matrix()
+  cols <- mx %>% colnames()
   annotation <- attr(p_df, 'annotation')
 
   # perform imputation
@@ -180,8 +180,8 @@ imputation <- function(
         g <- groups == x
         all(is.na(mx[r,g]))
       }) %>%
-	  purrr::flatten_lgl %>%
-      any
+	  purrr::flatten_lgl() %>%
+      any()
     if (any_mnar) {
       out[r] <- F
     }

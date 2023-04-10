@@ -47,8 +47,8 @@ vis_qc_scatter <- function(p_df) {
   p_df <- validate_proteomics_data(p_df)
   labels <- attr(p_df, 'annotation') %>%
     dplyr::pull(label) %>%
-    unique %>%
-    sort
+    unique() %>%
+    sort()
   min_LFQ <- min(p_df$LFQ)
   max_LFQ <- max(p_df$LFQ)
   
@@ -124,17 +124,17 @@ vis_upset <- function(p_df) {
   p_df <- validate_proteomics_data(p_df)
   annotation <- attr(p_df, 'annotation')
   
-  nsets <- annotation$group %>% unique %>% length
+  nsets <- annotation$group %>% unique() %>% length()
   nintersects = 2^nsets
   
   p_df %>%
     dplyr::inner_join(annotation, 'label') %>%
     dplyr::select(group, id) %>%
-    dplyr::distinct %>%
+    dplyr::distinct() %>%
     dplyr::mutate(present = 1) %>%
     tidyr::pivot_wider(names_from = group, values_from = present, values_fill = 0) %>% 
-    as.data.frame %>% 
-    UpSetR::upset(sets = annotation %>% dplyr::pull(group) %>% unique, 
+    as.data.frame() %>% 
+    UpSetR::upset(sets = annotation %>% dplyr::pull(group) %>% unique(), 
           order.by = "freq",
           nsets = nsets,
           nintersects = nintersects)

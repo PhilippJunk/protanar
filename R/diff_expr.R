@@ -34,13 +34,13 @@ diff_expr <- function(
     tidyr::pivot_wider(names_from = 'label', values_from = 'LFQ', values_fill = NA)
   mx <- df_wide %>%
     dplyr::select(tidyselect::where(is.numeric)) %>%
-    as.matrix
+    as.matrix()
   rownames(mx) <- df_wide %>% 
     dplyr::select(!tidyselect::where(is.numeric)) %>% 
-    dplyr::pull
+    dplyr::pull()
   annotation <- attr(p_df, 'annotation')
   # get groups from data and annotation
-  cols <- mx %>% colnames
+  cols <- mx %>% colnames()
   groups <- annotation$group[order(match(annotation$label, cols))]
   
   if (method == 'limma') {
@@ -48,7 +48,7 @@ diff_expr <- function(
     groups <- factor(make.names(groups))
     contrasts <- contrasts %>%
       dplyr::transmute(stringr::str_glue('{make.names(a)} - {make.names(b)}')) %>%
-      dplyr::pull
+      dplyr::pull()
     # run analysis
     out <- .stat_analysis_limma(mx, groups, contrasts)
   } else if (method == 'ttest') {
@@ -88,7 +88,7 @@ diff_expr <- function(
         tibble::rownames_to_column('id') %>%
         dplyr::mutate(contrast = contr)
     }) %>% 
-    dplyr::bind_rows %>%
+    dplyr::bind_rows() %>%
     dplyr::rename(logfc = logFC,
                   pval = P.Value) %>%
     dplyr::select(contrast, id, logfc, pval)
@@ -122,11 +122,11 @@ diff_expr <- function(
           }
           tryCatch({
             stats::t.test(mx1[n,], mx2[n,]) %>%
-              broom::glance %>%
+              broom::glance() %>%
               dplyr::pull(p.value)
           }, error = function(e) { return(NA_real_) })
         }) %>%
-	    purrr::flatten_dbl
+	    purrr::flatten_dbl()
       
       # get logfcs
       logfc <- unname(rowMeans(mx1, na.rm = T) - rowMeans(mx2, na.rm = T))
@@ -136,7 +136,7 @@ diff_expr <- function(
                      logfc = logfc,
                      pval = p_values)
     }) %>%
-    dplyr::bind_rows
+    dplyr::bind_rows()
 }
 
 #' Construct contrasts against control group.
@@ -172,7 +172,7 @@ construct_contrasts_all <- function(p_df) {
   all_groups <- unique(attr(p_df, 'annotation')$group)
   
   utils::combn(all_groups, 2) %>% 
-    t %>% 
+    t() %>% 
     tibble::as_tibble(.name_repair = 'unique') %>% 
     dplyr::rename(a = '...1', b = '...2')
 }
@@ -201,7 +201,7 @@ diff_type <- function(p_df, contrasts) {
         filter_data_by_group(c(a, b)) %>%
         dplyr::inner_join(attr(p_df, 'annotation'), by = 'label') %>%
         dplyr::select(id, group) %>%
-        dplyr::distinct %>%
+        dplyr::distinct() %>%
         dplyr::group_by(id) %>%
         dplyr::summarise(diff_type = dplyr::case_when(all(c(a, b) %in% group) ~ 'value_value',
                                                       a %in% group ~ 'value_imput',
@@ -212,7 +212,7 @@ diff_type <- function(p_df, contrasts) {
       
         
     }) %>%
-    dplyr::bind_rows %>%
+    dplyr::bind_rows() %>%
     tidyr::pivot_wider(names_from = contrast, values_from = diff_type, 
                        values_fill = 'imput_imput') %>%
     tidyr::pivot_longer(-id, names_to = 'contrast', values_to = 'diff_type') %>%

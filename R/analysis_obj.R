@@ -221,7 +221,7 @@ collapse_tech_repl <- function(p_df) {
   
   annotation <- annotation %>%
     dplyr::select(new_label, group, biol_repl) %>%
-    dplyr::distinct
+    dplyr::distinct()
     
   proteomics_data(p_df, annotation, has_tech_repl = FALSE, is_log2 = FALSE,
                   df_label = 'new_label', annotation_label = 'new_label')
@@ -253,7 +253,7 @@ filter_data_by_group_and_id <- function(p_df, df_filter) {
     dplyr::inner_join(df_filter, by = c('id', 'group'))
   # filter annotation
   annotation <- attr(p_df, 'annotation') %>%
-    dplyr::inner_join(df_filter %>% dplyr::select(group) %>% dplyr::distinct,
+    dplyr::inner_join(df_filter %>% dplyr::select(group) %>% dplyr::distinct(),
 					  by = 'group') 
   
   proteomics_data(
@@ -277,7 +277,7 @@ filter_data_by_group <- function(p_df, groups, keep=TRUE) {
 
   # reverse group selection of keep=FALSE
   if (!keep) {
-	all_groups <- annotation$group %>% unique
+	all_groups <- annotation$group %>% unique()
 	groups <- all_groups[!all_groups %in% groups]
   }
 
@@ -310,7 +310,7 @@ filter_data_by_samples <- function(p_df, samples, keep=TRUE) {
 
   # reverse sample selection if keep=FALSE
   if (!keep) {
-	all_samples <- annotation$labels %>% unique
+	all_samples <- annotation$labels %>% unique()
 	samples <- all_samples[!all_samples %in% samples]
   }
   
@@ -341,9 +341,9 @@ deconstruct_groups <- function(p_df) {
 
   sets <- p_df %>%
     dplyr::inner_join(annotation, by='label') %>%
-    dplyr::mutate(group = factor(group) %>% forcats::fct_infreq %>% forcats::fct_rev) %>%
+    dplyr::mutate(group = factor(group) %>% forcats::fct_infreq() %>% forcats::fct_rev()) %>%
     dplyr::select(id, group) %>%
-    dplyr::distinct %>%
+    dplyr::distinct() %>%
     dplyr::arrange(group) %>%
     dplyr::group_by(id) %>%
     dplyr::summarise(set = stringr::str_c(group, collapse = '__'),
@@ -353,7 +353,7 @@ deconstruct_groups <- function(p_df) {
     dplyr::count(set) %>% 
     dplyr::arrange(-n) %>%
     dplyr::pull(set) %>%
-    rlang::set_names %>%
+    rlang::set_names() %>%
     purrr::map(function(s) {
       sets %>%
         dplyr::filter(set == s) %>%

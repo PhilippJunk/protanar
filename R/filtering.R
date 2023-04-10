@@ -71,11 +71,11 @@ filtering <- function(
 #'   subset the different methods look at to retain a data point.
 #' @return A filtered data frame.
 .filtering_whole_dataset <- function(data, threshold) {
-  n_samples <- data %>% dplyr::pull(label) %>% unique %>% length
+  n_samples <- data %>% dplyr::pull(label) %>% unique() %>% length()
   data %>%
     dplyr::group_by(id) %>%
     dplyr::mutate(present_samples = dplyr::n()) %>%
-    dplyr::ungroup %>%
+    dplyr::ungroup() %>%
     dplyr::filter(present_samples/n_samples >= threshold)
 }
 
@@ -94,16 +94,16 @@ filtering <- function(
     dplyr::inner_join(annotation %>%
                         dplyr::group_by(group) %>%
                         dplyr::mutate(n_group = dplyr::n()) %>%
-                        dplyr::ungroup,
+                        dplyr::ungroup(),
                       by='label') %>%
     # calculate ratio of present sample for each peptide for each group
     dplyr::group_by(id, group) %>%
     dplyr::mutate(present_ratio = dplyr::n()/n_group) %>%
-    dplyr::ungroup %>%
+    dplyr::ungroup() %>%
     # get best ratio for each peptide
     dplyr::group_by(id) %>%
     dplyr::mutate(best_present_ratio = max(present_ratio)) %>%
-    dplyr::ungroup %>%
+    dplyr::ungroup() %>%
     # filter by best ratio
     dplyr::filter(best_present_ratio >= threshold)
 }
@@ -122,12 +122,12 @@ filtering <- function(
     dplyr::inner_join(annotation %>%
 					    dplyr::group_by(group) %>%
 					    dplyr::mutate(n_group = dplyr::n()) %>%
-					    dplyr::ungroup,
+					    dplyr::ungroup(),
 					  by='label') %>%
     # calculate ratio of present sample for each peptide for each group
     dplyr::group_by(id, group) %>%
     dplyr::mutate(present_ratio = dplyr::n()/n_group) %>%
-    dplyr::ungroup %>%
+    dplyr::ungroup() %>%
     # filter by ratio
     dplyr::filter(present_ratio >= threshold)
 }
