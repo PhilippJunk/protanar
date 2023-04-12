@@ -1,12 +1,12 @@
 #' The OOP framework for storing data in this analysis pipeline.
-#' 
+#'
 #' Contains constructors for and manipulations of the `proteomics_data` class.
 
 ###############################################################################
 # class definitions, as suggested as best practice in "Advanced R"
 
 #' Low level constructor for `proteomics_data` class
-#' 
+#'
 #' @param df The data frame containing the proteomics data.
 #' @param annotation A valid annotation data frame.
 #' @param has_tech_repl A boolean value indicating whether the data has been
@@ -16,8 +16,10 @@ new_proteomics_data <- function(df, annotation, has_tech_repl) {
   stopifnot(is.data.frame(df))
   stopifnot(is.data.frame(annotation))
   stopifnot(is.logical(has_tech_repl))
-  stopifnot(is.character(df$id), is.character(df$label), 
-            is.character(annotation$label), is.character(annotation$group))
+  stopifnot(
+    is.character(df$id), is.character(df$label),
+    is.character(annotation$label), is.character(annotation$group)
+  )
   stopifnot(is.numeric(df$LFQ), is.numeric(annotation$biol_repl))
   if (has_tech_repl) {
     stopifnot(is.numeric(annotation$tech_repl))
@@ -26,8 +28,9 @@ new_proteomics_data <- function(df, annotation, has_tech_repl) {
   proteomics_data <- structure(
     df,
     annotation = annotation,
-    class = c('proteomics_data', 'tbl_df', 'tbl', 'data.frame'),
-    has_tech_repl = has_tech_repl)
+    class = c("proteomics_data", "tbl_df", "tbl", "data.frame"),
+    has_tech_repl = has_tech_repl
+  )
 
   return(proteomics_data)
 }
@@ -38,79 +41,86 @@ new_proteomics_data <- function(df, annotation, has_tech_repl) {
 #' @return A validated `proteomics_data` object.
 validate_proteomics_data <- function(proteomics_data) {
   df <- tibble::as_tibble(proteomics_data)
-  annotation <- attr(proteomics_data, 'annotation')
-  has_tech_repl <- attr(proteomics_data, 'has_tech_repl')
+  annotation <- attr(proteomics_data, "annotation")
+  has_tech_repl <- attr(proteomics_data, "has_tech_repl")
 
-  if (!inherits(proteomics_data, 'proteomics_data')) {
-    stop('Please provide an object of class `proteomics_data` as input. ', 
-         'For more information, see `?proteomics_data`.',
-         call. = FALSE)
+  if (!inherits(proteomics_data, "proteomics_data")) {
+    stop("Please provide an object of class `proteomics_data` as input. ",
+      "For more information, see `?proteomics_data`.",
+      call. = FALSE
+    )
   }
-  
+
   if (!is.data.frame(annotation)) {
     stop(
-      '`annotation` must be a `data.frame`.',
+      "`annotation` must be a `data.frame`.",
       call. = FALSE
     )
   }
 
   if (!is.logical(has_tech_repl)) {
     stop(
-      '`has_tech_repl` must be a logical vector.',
+      "`has_tech_repl` must be a logical vector.",
       call. = FALSE
     )
   }
-  
-  if (!all(colnames(df) == c('id', 'label', 'LFQ'))) {
+
+  if (!all(colnames(df) == c("id", "label", "LFQ"))) {
     stop(
-      'Data must consists of the columns `id`, `label` and `LFQ`.',
+      "Data must consists of the columns `id`, `label` and `LFQ`.",
       call. = FALSE
     )
   }
-  
+
   if (has_tech_repl) {
-    if (!all(colnames(annotation) == c('label', 'group', 'biol_repl', 'tech_repl'))) {
-      stop('Annotation is expected to have the columns `label`, `group`, `biol_repl` and `tech_repl`.', 
-           call. = FALSE)
+    if (!all(colnames(annotation) == c("label", "group", "biol_repl", "tech_repl"))) {
+      stop("Annotation is expected to have the columns `label`, `group`, `biol_repl` and `tech_repl`.",
+        call. = FALSE
+      )
     }
   } else {
-    if (!all(colnames(annotation) == c('label', 'group', 'biol_repl'))) {
-      stop('Annotation is expected to have the columns `label`, `group` and `biol_repl`.', 
-           call. = FALSE)
+    if (!all(colnames(annotation) == c("label", "group", "biol_repl"))) {
+      stop("Annotation is expected to have the columns `label`, `group` and `biol_repl`.",
+        call. = FALSE
+      )
     }
   }
-  
+
   if (any(is.na(df$LFQ))) {
-    stop('LFQ intensities must be non-missing.',
-         call. = FALSE)
-    
+    stop("LFQ intensities must be non-missing.",
+      call. = FALSE
+    )
   }
-      
+
   if (any(df$LFQ < 0)) {
-    stop('LFQ intensities must be non-missing and greater than zero.',
-         call. = FALSE)
+    stop("LFQ intensities must be non-missing and greater than zero.",
+      call. = FALSE
+    )
   }
-  
+
   if (!all(unique(df$label) %in% annotation$label)) {
-    stop('Not all `label`s in data are present in `annotation`.', 
-         call. = FALSE)
+    stop("Not all `label`s in data are present in `annotation`.",
+      call. = FALSE
+    )
   }
-  
+
   if (!all(annotation$label %in% unique(df$label))) {
-    stop('Not all `label`s in `annotation` are present in data', 
-         call. = FALSE)
+    stop("Not all `label`s in `annotation` are present in data",
+      call. = FALSE
+    )
   }
-  
+
   if (any(duplicated(annotation$label))) {
-    stop('`label`s in `annotation` must be unique.', 
-         call. = FALSE)
+    stop("`label`s in `annotation` must be unique.",
+      call. = FALSE
+    )
   }
-  
+
   return(proteomics_data)
 }
 
 #' Construct a proteomics data object.
-#' 
+#'
 #' @param df The data frame with proteomics data.
 #' @param annotation The data frame with annotation for the proteomics data.
 #' @param has_tech_repl logical, whether the data and annotation has technical replicates.
@@ -125,28 +135,45 @@ validate_proteomics_data <- function(proteomics_data) {
 #' @return A `proteomics_data` object.
 #'
 #' @export
-proteomics_data <- function(
-    df,
-	annotation,
-	has_tech_repl,
-	is_log2,
-    df_id = 'id',
-	df_label = 'label',
-	df_LFQ = 'LFQ', 
-    annotation_label = 'label',
-	annotation_group = 'group', 
-    annotation_biol_repl = 'biol_repl',
-	annotation_tech_repl ='tech_repl'
-) {
-  
-  df <- df %>% 
-    dplyr::select({df_id}, {df_label}, {df_LFQ}) %>%
-    dplyr::rename(id = {df_id},
-				  label = {df_label},
-				  LFQ = {df_LFQ}) %>%
+proteomics_data <- function(df,
+                            annotation,
+                            has_tech_repl,
+                            is_log2,
+                            df_id = "id",
+                            df_label = "label",
+                            df_LFQ = "LFQ",
+                            annotation_label = "label",
+                            annotation_group = "group",
+                            annotation_biol_repl = "biol_repl",
+                            annotation_tech_repl = "tech_repl") {
+  df <- df %>%
+    dplyr::select(
+      {
+        df_id
+      },
+      {
+        df_label
+      },
+      {
+        df_LFQ
+      }
+    ) %>%
+    dplyr::rename(
+      id = {
+        df_id
+      },
+      label = {
+        df_label
+      },
+      LFQ = {
+        df_LFQ
+      }
+    ) %>%
     dplyr::select(id, label, LFQ) %>%
-    dplyr::mutate(id = make.names(id),
-				  label = make.names(label))
+    dplyr::mutate(
+      id = make.names(id),
+      label = make.names(label)
+    )
   if (!is_log2) {
     stopifnot(all(df$LFQ > 2))
     df <- df %>%
@@ -154,28 +181,70 @@ proteomics_data <- function(
   }
   if (has_tech_repl) {
     annotation <- annotation %>%
-      dplyr::select({annotation_label}, {annotation_group}, 
-                    {annotation_biol_repl}, {annotation_tech_repl}) %>%
-	  dplyr::rename(label = {annotation_label},
-                    group = {annotation_group},
-                    biol_repl = {annotation_biol_repl},
-                    tech_repl = {annotation_tech_repl}) %>%
+      dplyr::select(
+        {
+          annotation_label
+        },
+        {
+          annotation_group
+        },
+        {
+          annotation_biol_repl
+        },
+        {
+          annotation_tech_repl
+        }
+      ) %>%
+      dplyr::rename(
+        label = {
+          annotation_label
+        },
+        group = {
+          annotation_group
+        },
+        biol_repl = {
+          annotation_biol_repl
+        },
+        tech_repl = {
+          annotation_tech_repl
+        }
+      ) %>%
       dplyr::select(label, group, biol_repl, tech_repl)
   } else {
     annotation <- annotation %>%
-      dplyr::select({annotation_label}, {annotation_group}, 
-					{annotation_biol_repl}) %>%
-      dplyr::rename(label = {annotation_label},
-					group = {annotation_group},
-					biol_repl = {annotation_biol_repl}) %>%
+      dplyr::select(
+        {
+          annotation_label
+        },
+        {
+          annotation_group
+        },
+        {
+          annotation_biol_repl
+        }
+      ) %>%
+      dplyr::rename(
+        label = {
+          annotation_label
+        },
+        group = {
+          annotation_group
+        },
+        biol_repl = {
+          annotation_biol_repl
+        }
+      ) %>%
       dplyr::select(label, group, biol_repl)
   }
-  annotation %>% 
-    dplyr::mutate(group = make.names(group),
-				  label = make.names(label))
-  
+  annotation %>%
+    dplyr::mutate(
+      group = make.names(group),
+      label = make.names(label)
+    )
+
   validate_proteomics_data(new_proteomics_data(
-    df, annotation,has_tech_repl))
+    df, annotation, has_tech_repl
+  ))
 }
 
 ###############################################################################
@@ -190,9 +259,9 @@ proteomics_data <- function(
 join_annotation <- function(p_df) {
   # check inputs
   p_df <- validate_proteomics_data(p_df)
-  
+
   p_df %>%
-    dplyr::inner_join(attr(p_df, 'annotation'), by = 'label')
+    dplyr::inner_join(attr(p_df, "annotation"), by = "label")
 }
 
 #' Collapse technical replicates in proteomics data.
@@ -204,28 +273,31 @@ join_annotation <- function(p_df) {
 collapse_tech_repl <- function(p_df) {
   # check inputs
   p_df <- validate_proteomics_data(p_df)
-  if (!attr(p_df, 'has_tech_repl')) {
-    stop('The `proteomics_data` object must have technical replicates in order to collapse them.',
-         call. = FALSE)
+  if (!attr(p_df, "has_tech_repl")) {
+    stop("The `proteomics_data` object must have technical replicates in order to collapse them.",
+      call. = FALSE
+    )
   }
-  
-  annotation <- attr(p_df, 'annotation') %>%
-    dplyr::mutate(new_label = stringr::str_c(group, biol_repl, sep='_'))
-  
+
+  annotation <- attr(p_df, "annotation") %>%
+    dplyr::mutate(new_label = stringr::str_c(group, biol_repl, sep = "_"))
+
   p_df <- p_df %>%
     # transform back from log2 for collapsing
     dplyr::mutate(LFQ = 2^LFQ) %>%
-    dplyr::inner_join(annotation, by = 'label') %>%
+    dplyr::inner_join(annotation, by = "label") %>%
     dplyr::group_by(id, new_label) %>%
-    dplyr::summarise(LFQ = stats::median(LFQ), .groups='drop')
-  
+    dplyr::summarise(LFQ = stats::median(LFQ), .groups = "drop")
+
   annotation <- annotation %>%
     dplyr::select(new_label, group, biol_repl) %>%
     dplyr::distinct()
-    
-  proteomics_data(p_df, annotation, has_tech_repl = FALSE, is_log2 = FALSE,
-                  df_label = 'new_label', annotation_label = 'new_label')
-} 
+
+  proteomics_data(p_df, annotation,
+    has_tech_repl = FALSE, is_log2 = FALSE,
+    df_label = "new_label", annotation_label = "new_label"
+  )
+}
 
 # filter data by group and id
 # df_filter expected to have group and id column!
@@ -235,7 +307,7 @@ collapse_tech_repl <- function(p_df) {
 #' This filtering can be useful to filter a data set against the output of a
 #' differential analysis, for example when removing proteins from a data set that
 #' have also been identified in a negative control.
-#' 
+#'
 #' @param p_df Proteomics data.
 #' @param df_filter Dataframe, expected to have two columns called group and id.
 #' @return Filtered proteomics data.
@@ -249,16 +321,18 @@ filter_data_by_group_and_id <- function(p_df, df_filter) {
 
   # filter data
   p_df <- p_df %>%
-    dplyr::inner_join(attr(p_df, 'annotation'), by='label') %>%
-    dplyr::inner_join(df_filter, by = c('id', 'group'))
+    dplyr::inner_join(attr(p_df, "annotation"), by = "label") %>%
+    dplyr::inner_join(df_filter, by = c("id", "group"))
   # filter annotation
-  annotation <- attr(p_df, 'annotation') %>%
+  annotation <- attr(p_df, "annotation") %>%
     dplyr::inner_join(df_filter %>% dplyr::select(group) %>% dplyr::distinct(),
-					  by = 'group') 
-  
+      by = "group"
+    )
+
   proteomics_data(
-    p_df, annotation, 
-    has_tech_repl = attr(p_df, 'has_tech_repl'), is_log2 = TRUE)
+    p_df, annotation,
+    has_tech_repl = attr(p_df, "has_tech_repl"), is_log2 = TRUE
+  )
 }
 
 #' Filter proteomics data by groups.
@@ -270,28 +344,29 @@ filter_data_by_group_and_id <- function(p_df, df_filter) {
 #' @return Filtered proteomics data.
 #'
 #' @export
-filter_data_by_group <- function(p_df, groups, keep=TRUE) {
+filter_data_by_group <- function(p_df, groups, keep = TRUE) {
   # check inputs
   p_df <- validate_proteomics_data(p_df)
-  annotation <- attr(p_df, 'annotation')
+  annotation <- attr(p_df, "annotation")
 
   # reverse group selection of keep=FALSE
   if (!keep) {
-	all_groups <- annotation$group %>% unique()
-	groups <- all_groups[!all_groups %in% groups]
+    all_groups <- annotation$group %>% unique()
+    groups <- all_groups[!all_groups %in% groups]
   }
 
   # filter data
   p_df <- p_df %>%
-    dplyr::inner_join(attr(p_df, 'annotation'), by='label') %>%
+    dplyr::inner_join(attr(p_df, "annotation"), by = "label") %>%
     dplyr::filter(group %in% groups)
   # filter annotation
   annotation <- annotation %>%
     dplyr::filter(group %in% groups)
-  
+
   proteomics_data(
-    p_df, annotation, 
-    has_tech_repl = attr(p_df, 'has_tech_repl'), is_log2 = TRUE)
+    p_df, annotation,
+    has_tech_repl = attr(p_df, "has_tech_repl"), is_log2 = TRUE
+  )
 }
 
 #' Filter proteomics data by samples.
@@ -303,27 +378,28 @@ filter_data_by_group <- function(p_df, groups, keep=TRUE) {
 #' @return Filtered proteomics data.
 #'
 #' @export
-filter_data_by_samples <- function(p_df, samples, keep=TRUE) {
+filter_data_by_samples <- function(p_df, samples, keep = TRUE) {
   # check inputs
   p_df <- validate_proteomics_data(p_df)
-  annotation <- attr(p_df, 'annotation')
+  annotation <- attr(p_df, "annotation")
 
   # reverse sample selection if keep=FALSE
   if (!keep) {
-	all_samples <- annotation$labels %>% unique()
-	samples <- all_samples[!all_samples %in% samples]
+    all_samples <- annotation$labels %>% unique()
+    samples <- all_samples[!all_samples %in% samples]
   }
-  
+
   # filter data
   p_df <- p_df %>%
     dplyr::filter(!label %in% samples)
   # filter annotation
   annotation <- annotation %>%
     dplyr::filter(!label %in% samples)
-  
+
   proteomics_data(
     p_df, annotation,
-    has_tech_repl = attr(p_df, 'has_tech_repl'), is_log2 = TRUE)
+    has_tech_repl = attr(p_df, "has_tech_repl"), is_log2 = TRUE
+  )
 }
 
 #' Deconstruct groups in proteomics data.
@@ -337,20 +413,22 @@ filter_data_by_samples <- function(p_df, samples, keep=TRUE) {
 deconstruct_groups <- function(p_df) {
   # check inputs
   p_df <- validate_proteomics_data(p_df)
-  annotation <- attr(p_df, 'annotation')
+  annotation <- attr(p_df, "annotation")
 
   sets <- p_df %>%
-    dplyr::inner_join(annotation, by='label') %>%
+    dplyr::inner_join(annotation, by = "label") %>%
     dplyr::mutate(group = factor(group) %>% forcats::fct_infreq() %>% forcats::fct_rev()) %>%
     dplyr::select(id, group) %>%
     dplyr::distinct() %>%
     dplyr::arrange(group) %>%
     dplyr::group_by(id) %>%
-    dplyr::summarise(set = stringr::str_c(group, collapse = '__'),
-					 .groups = 'drop')
-  
+    dplyr::summarise(
+      set = stringr::str_c(group, collapse = "__"),
+      .groups = "drop"
+    )
+
   sets %>%
-    dplyr::count(set) %>% 
+    dplyr::count(set) %>%
     dplyr::arrange(-n) %>%
     dplyr::pull(set) %>%
     rlang::set_names() %>%

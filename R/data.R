@@ -1,5 +1,5 @@
 #' Artificial example data sets
-#' 
+#'
 #' @description
 #' `example_protanar_1` is an artifical example data set that contains
 #' data for 3 proteins in two different groups, with each 6 replicates.
