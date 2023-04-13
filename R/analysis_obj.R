@@ -251,13 +251,13 @@ proteomics_data <- function(df,
 # methods
 
 #' @export
-print.proteomics_data <- function(p_df, ...) {
-  annotation <- attr(p_df, "annotation")
-  n_proteins <- p_df %>%
+print.proteomics_data <- function(x, ...) {
+  annotation <- attr(x, "annotation")
+  n_proteins <- x %>%
     dplyr::pull(id) %>%
     unique() %>%
     length()
-  n_samples <- p_df %>%
+  n_samples <- x %>%
     dplyr::pull(label) %>%
     unique() %>%
     length()
@@ -270,19 +270,19 @@ print.proteomics_data <- function(p_df, ...) {
   cat(stringr::str_glue("with {n_proteins} proteins in "))
   cat(stringr::str_glue("{n_groups} groups and {n_samples} samples.\n\n\n"))
 
-  p_df %>%
-    head(10) %>%
+  x %>%
+    utils::head(10) %>%
     data.frame() %>%
     print()
 }
 
 #' @export
-summary.proteomics_data <- function(p_df, ...) {
+summary.proteomics_data <- function(object, ...) {
   # TODO
   # How should this be formatted?
   # maybe give summary for each sample: basically annotation data frame
   # with an additional colum called "count"
-  p_df %>%
+  object %>%
     join_annotation() %>%
     dplyr::group_by(label, group, biol_repl, tech_repl) %>% # TODO no tech repl!!
     dplyr::summarise(proteins = dplyr::n(), .groups = "drop") %>%
@@ -292,7 +292,7 @@ summary.proteomics_data <- function(p_df, ...) {
 }
 
 #' @export
-str.proteomics_data <- function(p_df, ...) {
+str.proteomics_data <- function(object, ...) {
   cat("TODO")
   # TOOD
   # How should this be formatted?
