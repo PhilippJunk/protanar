@@ -248,6 +248,59 @@ proteomics_data <- function(df,
 }
 
 ###############################################################################
+# methods
+
+#' @export
+print.proteomics_data <- function(p_df, ...) {
+  annotation <- attr(p_df, "annotation")
+  n_proteins <- p_df %>%
+    dplyr::pull(id) %>%
+    unique() %>%
+    length()
+  n_samples <- p_df %>%
+    dplyr::pull(label) %>%
+    unique() %>%
+    length()
+  n_groups <- annotation %>%
+    dplyr::pull(group) %>%
+    unique() %>%
+    length()
+
+  cat("A proteomics data set\n")
+  cat(stringr::str_glue("with {n_proteins} proteins in "))
+  cat(stringr::str_glue("{n_groups} groups and {n_samples} samples.\n\n\n"))
+
+  p_df %>%
+    head(10) %>%
+    data.frame() %>%
+    print()
+}
+
+#' @export
+summary.proteomics_data <- function(p_df, ...) {
+  # TODO
+  # How should this be formatted?
+  # maybe give summary for each sample: basically annotation data frame
+  # with an additional colum called "count"
+  p_df %>%
+    join_annotation() %>%
+    dplyr::group_by(label, group, biol_repl, tech_repl) %>% # TODO no tech repl!!
+    dplyr::summarise(proteins = dplyr::n(), .groups = "drop") %>%
+    dplyr::arrange(group, biol_repl, tech_repl) %>%
+    data.frame() %>%
+    print()
+}
+
+#' @export
+str.proteomics_data <- function(p_df, ...) {
+  cat("TODO")
+  # TOOD
+  # How should this be formatted?
+  # ehm, don't know, to be honest? mostly rely on the tibble interface,
+  # since that is the best one to use?
+}
+
+###############################################################################
 # helper functions
 
 #' Join proteomics data with associated annotation.
