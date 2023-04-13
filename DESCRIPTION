@@ -20,7 +20,7 @@ Imports:
     magrittr,
     rlang,
     tidyr,
-    tidyselect,
+    tidyselect (>= 1.2.0),
     ggplot2,
     patchwork,
     UpSetR,
