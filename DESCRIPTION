@@ -27,10 +27,10 @@ Imports:
     broom,
     MsCoreUtils,
     limma,
-    readr
 biocViews:
 LazyData: true
 Suggests: 
     knitr,
+    readr,
     rmarkdown
 VignetteBuilder: knitr

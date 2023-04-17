@@ -6,7 +6,7 @@
 \usage{
 map_uniprot_hgnc(
   uniprot_ids,
-  hgnc_database,
+  hgnc_db,
   multiple_mode = "first",
   manual_file,
   separator_in = ";",
@@ -16,9 +16,8 @@ map_uniprot_hgnc(
 \arguments{
 \item{uniprot_ids}{A vector of UNIPROT IDs.}
 
-\item{hgnc_database}{The database file of the HGNC genenames. Expected to
-be tab-separated, and contain the columns "hgnc_id", "symbol" and
-"uniprot_ids".}
+\item{hgnc_db}{A data.frame of the HGNC data base. For this function,
+expected to contain the columns "hgnc_id", "symbol", and "uniprot_ids".}
 
 \item{multiple_mode}{Determines how cases are treated where one UNIPROT ID
 corresponds to multiple HGNC gene names. Possible values are "first" and

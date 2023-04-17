@@ -30,14 +30,14 @@ collapse_uniprot_ids <- function(uniprot_ids,
 
   if (multiple_mode == "manual") {
     # import data set
-    manual <- utils::read.table(manual_file, header = T, sep = "\t")
+    manual <- utils::read.table(manual_file, header = TRUE, sep = "\t")
   }
 
   # only iterate over unique elements
   uniprot_ids_unique <- unique(uniprot_ids)
   out_unique <- vector("character", length(uniprot_ids_unique))
 
-  for (i in 1:length(uniprot_ids_unique)) {
+  for (i in seq_along(uniprot_ids_unique)) {
     id <- uniprot_ids_unique[i]
     out_id <- c()
     # split by input separator
@@ -106,9 +106,8 @@ collapse_uniprot_ids <- function(uniprot_ids,
 #' names where applicable.
 #'
 #' @param uniprot_ids A vector of UNIPROT IDs.
-#' @param hgnc_database The database file of the HGNC genenames. Expected to
-#'   be tab-separated, and contain the columns "hgnc_id", "symbol" and
-#'   "uniprot_ids".
+#' @param hgnc_db A data.frame of the HGNC data base. For this function,
+#'   expected to contain the columns "hgnc_id", "symbol", and "uniprot_ids".
 #' @param multiple_mode Determines how cases are treated where one UNIPROT ID
 #'   corresponds to multiple HGNC gene names. Possible values are "first" and
 #'   "manual" and "none" (default "first").
@@ -124,7 +123,7 @@ collapse_uniprot_ids <- function(uniprot_ids,
 #'
 #' @export
 map_uniprot_hgnc <- function(uniprot_ids,
-                             hgnc_database,
+                             hgnc_db,
                              multiple_mode = "first",
                              manual_file,
                              separator_in = ";",
@@ -136,28 +135,25 @@ map_uniprot_hgnc <- function(uniprot_ids,
 
   if (multiple_mode == "manual") {
     # import data set
-    manual <- utils::read.table(manual_file, header = T, sep = "\t")
+    manual <- utils::read.table(manual_file, header = TRUE, sep = "\t")
   }
+
+  stopifnot(is.data.frame(hgnc_db))
+  hgnc_db <- hgnc_db %>%
+    dplyr::select(hgnc_id, symbol, uniprot_ids) %>%
+    tidyr::separate_rows(uniprot_ids) %>%
+    dplyr::filter(!is.na(uniprot_ids))
 
   # For element in uniprot_id, find assignment in HGNC
   # There can be multiple HGNC IDs associated with one UNIPROT ID
   # There can also be multiple UNIPROT IDs associated with one HGNC ID
-
-  # load hgnc database
-  hgnc_db <- readr::read_tsv(hgnc_database,
-    show_col_types = F
-  ) %>%
-    dplyr::select(hgnc_id, symbol, uniprot_ids) %>%
-    tidyr::separate_rows(uniprot_ids) %>%
-    dplyr::filter(!is.na(uniprot_ids))
-  # TODO still produces parsing problems... annoying but well
 
   # make input unique
   uniprot_ids_unique <- unique(uniprot_ids)
   out_unique <- vector("character", length(uniprot_ids_unique))
 
   # perform mapping
-  for (i in 1:length(uniprot_ids_unique)) {
+  for (i in seq_along(uniprot_ids_unique)) {
     id <- uniprot_ids_unique[i]
     hits <- c()
     # split by semi-colon
