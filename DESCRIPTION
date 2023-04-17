@@ -30,3 +30,7 @@ Imports:
     readr
 biocViews:
 LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -1,0 +1,232 @@
+---
+title: "example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(tidyr)
+
+library(protanar)
+
+tutorial_dir <- "~/work/other/2023-03-30_RSeminarProteomics/Tutorial_002/"
+```
+
+## Setting up the analysis object
+
+Load the annotation for the data set:
+
+```{r}
+annotation <- read.table(
+  "https://raw.githubusercontent.com/Systems-Biology-Ireland/Tutorials/main/tutorials/Tutorial_002/annotation.csv",
+  header = T, sep = ";"
+) %>%
+  mutate(label_new = str_c(group, biol_repl, tech_repl, sep = "__"))
+str(annotation)
+```
+
+Load the data from PRIDE:
+
+```{r}
+read.table(
+  "https://ftp.pride.ebi.ac.uk/pride/data/archive/2023/02/PXD039404/proteinGroups.txt",
+  header = T, sep = "\t"
+) %>%
+  filter(Only.identified.by.site != "+") %>%
+  filter(Reverse != "+") %>%
+  filter(Potential.contaminant != "+") %>%
+  select(starts_with("LFQ"), "Majority.protein.IDs", "id") %>%
+  pivot_longer(
+    cols = starts_with("LFQ"),
+    values_to = "LFQ", names_to = "label"
+  ) %>%
+  filter(LFQ != 0) %>%
+  mutate(id = as.character(id)) %>%
+  inner_join(annotation, by = "label")
+str(raw)
+```
+
+Next, construct the `proteomics_analysis` object from the data and the annotation:
+
+```{r}
+df <- proteomics_data(
+  raw, annotation,
+  has_tech_repl = TRUE, is_log2 = FALSE,
+  df_label = "label_new", annotation_label = "label_new",
+  annotation_group = "group"
+)
+
+df
+```
+
+## Quality control
+
+There are multiple visualization functions to easily assess the quality of the data set.
+
+```{r}
+vis_qc_histo(df)
+```
+
+```{r}
+vis_qc_count(df)
+```
+
+```{r}
+vis_upset(df %>% collapse_tech_repl())
+```
+
+```{r}
+vis_pca(df %>% filtering("each", 0.6))
+```
+
+From these visualizations, we can see that there is a group with almost no proteins identified, which should be removed from the analysis. We can do so with `filter_data_by_group`.
+
+```{r}
+df <- df %>%
+  filter_data_by_group(c("ripa"), keep = FALSE)
+```
+
+We can confirm that the group has been removed and our data is ready for the next steps now:
+
+```{r}
+vis_qc_histo(df)
+```
+
+```{r}
+vis_qc_count(df)
+```
+
+## ID mapping
+
+Mapping from the "Majority Protein IDs" column from MaxQuant to UNIPROT ids to HGNC gene names.
+
+<!-- TODO update after integration with hgnc R package! -->
+
+```{r}
+hgnc_database <- str_c(tutorial_dir, "/data/hgnc_complete_set.txt")
+
+id_mapping <- raw %>%
+  select(id, Majority.protein.IDs) %>%
+  rename(mpi = Majority.protein.IDs) %>%
+  distinct() %>%
+  mutate(
+    uniprot = collapse_uniprot_ids(mpi, "first"),
+    hgnc = map_uniprot_hgnc(uniprot, hgnc_database, "first"),
+    id = make.names(id)
+  )
+
+str(id_mapping)
+
+id_mapping %>%
+  select(id, hgnc) %>%
+  distinct() %>%
+  pull(hgnc) %>%
+  duplicated() %>%
+  table() %>%
+  print()
+```
+
+## Data filtering
+
+Filter proteins by how consistenly they appear in the data set. There are different strategies to this, see `filtering_methods()` for available options:
+
+```{r}
+filtering_methods()
+```
+
+I personally prefer to filter for each protein in each group. After filtering, technical replicates are collapsed.
+
+<!-- TODO write better -->
+
+```{r}
+df_filtered <- df %>%
+  filtering("each", 0.6) %>%
+  collapse_tech_repl()
+
+df_filtered
+```
+
+## Data imputation
+
+There are multple strategies for imputation.
+```{r}
+imputation_methods()
+```
+
+```{r}
+df_imput_1 <- df_filtered %>%
+  imputation("zero")
+
+# df_imput_2 <- df_filtered %>%
+#   imputation('MinProb')
+#
+# df_imput_3 <- df_filtered %>%
+#   imputation('mixed_sample', mar_method = 'MLE', mnar_method = 'MinProb')
+```
+
+```{r}
+vis_qc_histo(df_imput_1)
+
+vis_pca(df_imput_1)
+```
+
+For more details, see separate vignette on imputation (TODO).
+
+## Differential analysis
+
+There are multiple options for the differential analysis.
+```{r}
+stat_analysis_methods()
+```
+
+The `diff_expr` functions expects a data frame with the comparisons to make as an input. By convention, this data frame has two columns, `a` and `b`. There are some helper functions to construct this data frame:
+```{r}
+cntrsts <- construct_contrasts_control(df_imput_1, "NT")
+construct_contrasts_all(df_imput_1)
+str(cntrsts)
+```
+
+Running differential expression:
+```{r}
+df_diff <- df_imput_1 %>%
+  diff_expr(
+    method = "limma",
+    contrasts = cntrsts
+  ) %>%
+  inner_join(diff_type(df_filtered, contrasts = cntrsts),
+    by = c("contrast", "id")
+  ) %>%
+  filter(diff_type != "imput_imput") %>%
+  mutate(pval_adj = p.adjust(pval, "BH"))
+
+str(df_diff)
+```
+
+Results of the differential analysis can be directly processed further in R:
+```{r}
+df_diff %>%
+  filter(contrast == "G12D_DMOG - NT") %>%
+  ggplot(aes(x = logfc, y = -log10(pval_adj))) +
+  geom_point()
+
+df_diff %>%
+  filter(contrast == "G12D_DMOG - NT") %>%
+  filter(diff_type == "value_value") %>%
+  arrange(pval_adj) %>%
+  head(10) %>%
+  inner_join(id_mapping %>% select(id, hgnc), by = "id") %>%
+  select(hgnc, contrast, logfc, pval_adj)
+```

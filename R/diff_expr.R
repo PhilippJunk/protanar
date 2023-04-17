@@ -2,6 +2,8 @@
 #'
 #' @return A character vector with the available methods for statistical
 #' analysis
+#'
+#' @export
 stat_analysis_methods <- function() {
   c("limma", "ttest")
 }
