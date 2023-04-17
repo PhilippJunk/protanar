@@ -19,10 +19,9 @@ library(dplyr)
 library(ggplot2)
 library(stringr)
 library(tidyr)
+library(readr)
 
 library(protanar)
-
-tutorial_dir <- "~/work/other/2023-03-30_RSeminarProteomics/Tutorial_002/"
 ```
 
 ## Setting up the analysis object
@@ -116,7 +115,12 @@ Mapping from the "Majority Protein IDs" column from MaxQuant to UNIPROT ids to H
 <!-- TODO update after integration with hgnc R package! -->
 
 ```{r}
-hgnc_database <- str_c(tutorial_dir, "/data/hgnc_complete_set.txt")
+# load HGNC database from web
+hgnc_database <- readr::read_tsv(
+  "https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt",
+  col_select = c("hgnc_id", "symbol", "uniprot_ids"),
+  show_col_types = FALSE
+)
 
 id_mapping <- raw %>%
   select(id, Majority.protein.IDs) %>%
@@ -161,7 +165,7 @@ df_filtered
 
 ## Data imputation
 
-There are multple strategies for imputation.
+There are multiple strategies for imputation.
 ```{r}
 imputation_methods()
 ```
