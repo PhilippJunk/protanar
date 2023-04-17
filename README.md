@@ -1,14 +1,19 @@
 # protanar: PROTemics ANAlysis in R
 
-A R package for the analysis of proteomics data.
+A R package for the tidy analysis of proteomics data.
 
 ## Installation
 
-TODO
+```R
+remotes::install_github(
+    'philippjunk/protanar',
+    build_vignettes=TRUE
+)
+```
 
 ## Examples
 
-TODO
+Check out the vignettes for an example workflow.
 
 ## License
 
