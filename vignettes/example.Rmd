@@ -41,7 +41,7 @@ str(annotation)
 Load the data from PRIDE:
 
 ```{r}
-read.table(
+raw <- read.table(
   "https://ftp.pride.ebi.ac.uk/pride/data/archive/2023/02/PXD039404/proteinGroups.txt",
   header = T, sep = "\t"
 ) %>%
