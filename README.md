@@ -8,7 +8,7 @@ To install the package without building the vignettes (currently recommended), p
 
 ```R
 remotes::install_github(
-   'philippjunk/protanar',
+   'philippjunk/protanar'
 )
 ```
 
